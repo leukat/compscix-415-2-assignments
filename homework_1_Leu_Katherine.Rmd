@@ -11,6 +11,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 My Github repository for my assignments can be found at this URL: [https://github.com/leukat/compscix-415-2-assignments]
 
+
+## Looking at the Data
 ```{r load_packages, warning=FALSE, message=FALSE}
 library(mdsr)
 library(tidyverse)
@@ -19,22 +21,23 @@ library(tidyverse)
 ```{r}
 data("WorldCities")
 ```
-### Question 1: How many observations and variables are there in this data set? What are some of the variable names?
+
+###Question 1: How many observations and variables are there in this data set? What are some of the variable names?
 
 There are 23,018 observations and 10 variables in the WorldCities dataset.  Variable names include "latitude," "longitude," "population," and "region."
 ```{r}
 glimpse(WorldCities)
 ```
 
-### Question 2: There is a column called region in the data set. Can you extract this and show only the unique values?
-
-####Example of extracting part of the data:
+## Extracting Parts of the Data
+####Example:
 ```{r}
 WorldCities <- head(WorldCities, 200) # 200 rows
 country_col <- WorldCities$country
 unique(country_col)
 ```
-####Extracting part of the data for region:
+
+### Question 2: There is a column called region in the data set. Can you extract this and show only the unique values?
 ```{r}
 region_col <- WorldCities$region
 ```
@@ -42,3 +45,26 @@ Unique values of region:
 ```{r}
 unique(region_col)
 ```
+
+## Extracting Data the Tidy Way
+### Question 3: Can you extract and show the unique entries from the country column in WorldCities using one line of code and two %>% operators?
+```{r}
+WorldCities %>% select(country) %>% unique()
+```
+## Visualizing the Data
+####Example for visualizing city populations:
+```{r}
+WorldCities %>% ggplot(aes(x = population)) + 
+  geom_histogram()
+```
+
+### Question 4: Make one more histogram of the population and add a new x-label, a new y-label, a new title (use ggtitle('my title')), and change the theme of the plot using theme_bw().
+```{r}
+WorldCities %>% ggplot(aes(x = population)) + 
+  geom_histogram() +
+  xlab('City Population') +
+  ylab('Number of Cities') +
+  ggtitle('Distribution of City Populations') +
+  theme_bw()
+```
+
