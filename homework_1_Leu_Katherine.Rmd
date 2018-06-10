@@ -22,7 +22,7 @@ library(tidyverse)
 data("WorldCities")
 ```
 
-###Question 1: How many observations and variables are there in this data set? What are some of the variable names?
+### Question 1: How many observations and variables are there in this data set? What are some of the variable names?
 
 There are 23,018 observations and 10 variables in the WorldCities dataset.  Variable names include "latitude," "longitude," "population," and "region."
 ```{r}
@@ -30,7 +30,7 @@ glimpse(WorldCities)
 ```
 
 ## Extracting Parts of the Data
-####Example:
+#### Example:
 ```{r}
 WorldCities <- head(WorldCities, 200) # 200 rows
 country_col <- WorldCities$country
@@ -52,7 +52,7 @@ unique(region_col)
 WorldCities %>% select(country) %>% unique()
 ```
 ## Visualizing the Data
-####Example for visualizing city populations:
+#### Example for visualizing city populations:
 ```{r}
 WorldCities %>% ggplot(aes(x = population)) + 
   geom_histogram()
