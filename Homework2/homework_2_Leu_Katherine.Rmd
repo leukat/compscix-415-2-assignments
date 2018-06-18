@@ -1,0 +1,245 @@
+---
+title: "COMPSCIX 415.2 Homework 2"
+author: "Katherine Leu"
+date: "June 17, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(ggplot2)
+```
+
+## Section 3.2.4
+
+### 1. Run `ggplot(data = mpg)`. What do you see?
+```{r}
+ggplot(data = mpg)
+```
+
+When I run `ggplot(data = mpg)`, I see a blank plot with no axes or observations.
+
+
+### 2. How many rows are in `mpg`? How many columns?
+```{r}
+?mpg
+```
+`mpg`has 234 rows and 11 variables (columns).
+
+### 3. What does the `drv` variable describe? Read the help for ?mpg to find out.
+The `drv` variable describes the car's drivetrain: whether the car has a front-wheel drive, rear-wheel drive, or four-wheel drive.
+
+### 4. Make a scatterplot of `hwy` vs `cyl`.
+Below is the scatterplot of `hwy` vs. `cyl`.
+```{r}
+ggplot(data=mpg) +
+  geom_point(mapping=aes(x=cyl, y=hwy))
+```
+
+
+### 5. What happens if you make a scatterplot of `class` vs `drv`? Why is the plot not useful?
+```{r}
+ggplot(data=mpg) +
+  geom_point(mapping=aes(x=drv, y=class))
+```
+
+Above is the scatterplot of `class` vs. `drv`.  It's not very useful because while there are probably multiple observations in the intersections of the categories of the two variables (e.g. midsize cars with four-wheel drive), from the plot you can't tell how many observations there are in each intersection--only that there are observations.
+
+
+## Section 3.3.1
+### 1. What's gone wrong with this code? Why are the points not blue?
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color = "blue"))
+```
+
+The issue with this code is that `color="blue"` is specified within `aes()` rather than outside of it.  Since it's specified within `aes()`, it looks like what `color="blue"` is doing is specifying the label for the color used in the scatterplot (and I guess orange is a default color). 
+
+### 2. Which variables in `mpg` are categorical? Which variables are continuous? (Hint: type `?mpg` to read the documentation for the dataset). How can you see this information when you run `mpg`?
+The categorical variables in `mpg` are `manufacturer`, `model`, `year`, `cyl`, `trans`, `drv`, `fl`, `class`.  The continuous variables are `displ`, `cty`, and `hwy`.  You can also see this information by displaying the unique values of each variable.
+```{r}
+unique(mpg$cyl)
+unique(mpg$displ)
+```
+
+### 3. Map a continuous variable to `color`, `size`, and `shape`. How do these aesthetics behave differently for categorical vs. continuous variables?
+
+#### Mapping continuous and categorical variables to `color`:
+
+##### Continuous:
+```{r}
+ggplot(data=mpg) +
+  geom_point(mapping=aes(x=cyl, y=hwy, color=displ))
+```
+
+##### Categorical:
+```{r}
+ggplot(data=mpg) +
+  geom_point(mapping=aes(x=cyl, y=hwy, color=drv))
+```
+
+The `color` aesthetic behaves differently when mapped to continuous versus categorical variables in that there is a different relationship between the colors it selects to represent each type of variable.  For continuous variables, it provides a color gradient to illustrate where values are extreme.  For categorical variables, it chooses colors with maximum contrast so that categories can be differentiated.
+
+#### Mapping continuous and categorical variables to `size`:
+
+##### Continuous:
+```{r}
+ggplot(data=mpg) +
+  geom_point(mapping=aes(x=cyl, y=hwy, size=displ))
+```
+
+##### Categorical:
+```{r}
+ggplot(data=mpg) +
+  geom_point(mapping=aes(x=cyl, y=hwy, size=drv))
+```
+
+The `size` aesthetic behaves differently when mapped to continuous versus categorical variables in that for continuous variables, there is a relationship between the size of the point and the value of the variable: the size of the point increases as the value of the variable increases.  For categorical variables, the size of the point has no relationship to the variable's categories, since the categories have no order to them.
+
+#### Mapping continuous and categorical variables to `shape`:
+
+##### Continuous:
+```{r}
+#ggplot(data=mpg) +
+#  geom_point(mapping=aes(x=cyl, y=hwy, shape=displ))
+```
+Running this code produces the following error message: "Error: A continuous variable can not be mapped to shape"
+
+##### Categorical:
+```{r}
+ggplot(data=mpg) +
+  geom_point(mapping=aes(x=cyl, y=hwy, shape=drv))
+```
+
+The `shape` aesthetic behaves differently when mapped to continuous versus categorical variables in that it doesn't work for continuous variables (presumably because it doesn't make sense to represent each value of the variable with a different shape).  For categorical variables, `shape` represents each category with a different shape.
+
+### 4. What happens if you map the same variable to multiple aesthetics?
+If you map the same variable to multiple aesthetics, the graph combines the aesthetics.  In the below scatterplot, `drv` is mapped to both `color` and `shape`, and so each category of `drv` is represented by a unique shape-color combination.
+```{r}
+ggplot(data=mpg) +
+  geom_point(mapping=aes(x=cyl, y=hwy, color=drv, shape=drv))
+```
+
+### 5. What does the `stroke` aesthetic do? What shapes does it work with? (Hint: use `?geom_point`)
+```{r}
+?geom_point
+```
+The `stroke` aesthetic works with the filled shapes, 21 through 24, for which you can control the appearance of both the fill color and the outline.  For those shapes, `stroke` changes the width of the outline.  
+
+```{r}
+ggplot(data=mpg) +
+  geom_point(mapping=aes(x=cyl, y=hwy), shape=21, color="green", stroke=2)
+```
+
+### 6. What happens if you map an aesthetic to something other than a variable name, like `aes(colour = displ < 5)`?
+
+If you map an aesthetic to a statement, rather than to a variable name, it applies a different visual effect to each observation according to whether the statement is true for the observation or not.  In the below graph, observations for which `displ<5` is true are colored blue, whereas observations for which `displ<5` is false are colored orange.
+```{r}
+ggplot(data=mpg) +
+  geom_point(mapping=aes(x=cyl, y=hwy, color = displ<5))
+```
+
+## Section 3.5.1
+### 4. Take the first faceted plot in this section:
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_wrap(~ class, nrow = 2)
+```
+
+### What are the advantages to using faceting instead of the colour aesthetic? What are the disadvantages? How might the balance change if you had a larger dataset?
+
+The advantage to using faceting rather than the color aesthetic is that faceting enables you to clearly see how observations are distributed for each category of a certain variable.  If you were using the color aesthetic without facets, it would be more difficult to see the distribution of observations by category because they would all be in one large plot, and points from different categories may overlap with each other.  However, using the color aesthetic rather than facets could highlight how one category relates to the other categories or differs from them in the context of all of the observations.  This would be harder to see in a faceted plot because each category is displayed separately from the others.
+In a larger dataset, faceting might be more advantageous, since with more observations it might be harder to see in one plot how variables of different categories might differ from each other.
+
+### 5. Read `?facet_wrap`. What does `nrow` do? What does `ncol` do? What other options control the layout of the individual panels? Why doesn't facet_grid() have `nrow` and `ncol` argument?
+```{r}
+?facet_wrap
+```
+`nrow` specifies the number of rows of panels in the faceted plot, while `ncol` specifies the number of columns of panels in the plot.  Another option that controls the layout of the individual panels is `scales`, which allows the scales to be the same across each panel or to vary across panels.  
+`facet_grid()` doesn't have `nrow` or `ncol` arguments because the number of rows and columns is defined by the levels of the two variables that are specified to make the grid.
+
+
+## Section 3.6.1
+### 1. What geom would you use to draw a line chart? A boxplot? A histogram? An area chart?
+To draw a line chart, I would use `geom_line`. To draw a boxplot, I would use `geom_boxplot`. To draw a histogram, I would use `geom_histogram`.  To draw an area chart, I would use `geom_area`.
+
+### 2. Run this code in your head and predict what the output will look like. Then, run the code in R and check your predictions.
+I predict that the code will create a scatterplot of `hwy` by `displ` where the points are colored according to the categories of `drv`. The plot will also include smooth lines for each of the categories of `drv`, and those lines will also be colored accordingly. 
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = drv)) + 
+  geom_point() + 
+  geom_smooth(se = FALSE)
+```
+
+### 3. What does `show.legend = FALSE` do? What happens if you remove it? Why do you think I used it earlier in the chapter?
+`show.legend = FALSE` removes the graph's legend, which tells what each of the group aesthetics represents.  When you remove `show.legend=FALSE`, the legend appears by default if the graph uses aesthetics by group.  It was used earlier in the chapter in an example including 3 graphs, not all of which were grouped by an aesthetic, and this was done in order to make all graphs in the example consistent.
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = drv)) + 
+  geom_point(show.legend = FALSE) + 
+  geom_smooth(se = FALSE, show.legend = FALSE)
+```
+
+### 4. What does the `se` argument to `geom_smooth()` do?
+The `se` argument to `geom_smooth()` specifies whether or not to include a representation of the confidence interval around the line in the graph.
+
+### 5. Will these two graphs look different? Why/why not?
+The two graphs will not look different, because specifying mappings in the overall `ggplot()` function will define them as global mappings that will be passed to each of the geoms that are added to the graph.
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_point() + 
+  geom_smooth()
+```
+```{r}
+ggplot() + 
+  geom_point(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_smooth(data = mpg, mapping = aes(x = displ, y = hwy))
+```
+
+### 6. Recreate the R code necessary to generate the following graphs.
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+  geom_point(color="black", size=4) + 
+  geom_smooth(se=FALSE, size=2)
+```
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+  geom_point(color="black", size=4) + 
+  geom_smooth(mapping=aes(group=drv), se=FALSE, size=2)
+```
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+  geom_point(mapping=aes(color=drv), size=4) + 
+  geom_smooth(mapping=aes(color=drv), se=FALSE, size=2)
+```
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+  geom_point(mapping=aes(color=drv), size=4) + 
+  geom_smooth(se=FALSE, size=2)
+```
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+  geom_point(mapping=aes(color=drv), size=4) + 
+  geom_smooth(mapping=aes(linetype=drv), se=FALSE, size=2)
+```
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+  geom_point(mapping=aes(fill=drv), size=4, shape=21, color="white", stroke=4)
+```
+
+## Section 3.7.1
+### 2. What does `geom_col()` do? How is it different to `geom_bar()`?
+`geom_col()` and `geom_bar()` both create bar charts.  However, with `geom_col()`, the height of the bars represents the values of the variable defined in aesthetic `y`.  Meanwhile, with `geom_bar()` the height of the bars represents the number of cases in each group. 
+
+## Answer this question:
+### 1. Look at the data graphics at the following link: [What is a Data Scientist](https://static.guim.co.uk/sys-images/Guardian/Pix/pictures/2012/3/2/1330695817953/EMC2-graphic-on-data-scie-008.jpg). Please briefly critique the designer's choices. What works? What doesn't work? What would you have done differently?
+
+I think the most effective graphics the designer used were the bar charts (used to compare data scientists to business intelligence professionals), because it's clear from the differences in the height of the bars that data scientists do differ from business intelligence professionals in the ways that the text points out.  The choice of blue and dark gray as the two colors to represent each group is maybe not as effective, since there isn't much contrast between those colors.
+There are certain graphics that use size to illustrate differences (the squares representing responses to the question about the best source of new data science talent, and circles representing the fields that data scientists and BI professionals studied).  These graphics are somewhat effective in the sense that the viewer can clearly tell which category is the biggest and what the relative size of the other categories is, but their effectiveness was undercut because I was confused about how the percentage mapped to the area of the circles/squares: for example, the 12% square is about a fourth the size of the 24% square (I later realized that the percentages likely map to the height of the squares/circles, not their area.)  Still, if viewers are paying attention to area, this representation would exaggerate the differences between the categories.  It's especially confusing for the circles, since it's harder to compare the heights of the circles.
+
+In general, I would have organized this series of graphics in a more logical manner, so that the graphic as a whole tells a more coherent story.  For one thing, there are several graphics that compare data scientists to business intelligence professionals, but they're scattered throughout, rather than grouped together to provide a clear picture of how data scientists tend to differ from business intelligence professionals. I might have started with the graphics that provide background for who data scientists are and what they do, then included a section comparing data scientists to business intelligence professionals, and then ended with the graphics about the future of the data science workforce.
