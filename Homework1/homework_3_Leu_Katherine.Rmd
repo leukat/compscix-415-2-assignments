@@ -1,0 +1,201 @@
+---
+title: "COMPSCIX 415.2 Homework 3"
+author: "Katherine Leu"
+date: "June 25, 2018"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(ggplot2)
+library(nycflights13)
+```
+
+## Section 3.8.1
+
+### 1. What is the problem with this plot? How could you improve it?
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) + 
+  geom_point()
+```
+
+The problem with this plot is overplotting: the plot does not display as many points as there are observations because the values of `cty` and `hwy` are rounded, and thus each intersection of the two variables contains several observations.  These observations display as a single point on the grid because they have the same values on the x and y axes.
+To avoid the problem of overplotting, we could use the position adjustment `jitter` to add noise to each observation so that they appear as separate points in the graph.  Below is the same graph, but with the `jitter` position adjustment added:
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_point(position = "jitter")
+```
+
+### 2. What parameters to `geom_jitter()` control the amount of jittering?
+In `geom_jitter()`, the parameters `width` and `height` control the amount of jittering by specifying how much jitter to add in the horizontal and vertical directions, respectively.
+
+### 3. Compare and contrast `geom_jitter()` with `geom_count()`.
+`geom_jitter()` and `geom_count()` are both variants of `geom_point()` that address the problem of overplotting, though in different ways.  `geom_jitter()` addresses overplotting by adding jitter to the position of each observation so that they display as separate points, while `geom_count()` preserves the position of each point but varies the size of the points to indicate which points include more observations.  Below is the plot of `cty` and `hwy`, using geom_point() to address the overplotting:
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_count()
+```
+
+### 4. What’s the default position adjustment for `geom_boxplot()`? Create a visualisation of the mpg dataset that demonstrates it.
+
+The default position for `geom_boxplot()` is `dodge`.
+Here is a boxplot of `drv` and `displ` from the `mpg` dataset:
+```{r}
+ggplot(data=mpg, mapping = aes(x= cyl, y = displ, group =drv)) + 
+  geom_boxplot()
+```
+
+Although no position adjustment is explicitly specified, running this plot produces the warning message "position_dodge requires non-overlapping x intervals", which demonstrates that "dodge" is the default position adjustment for `geom_boxplot()`.
+Below is the same plot as above, but with the "dodge" position adjustment explicitly specified.  The two plots look the same.
+```{r}
+ggplot(data=mpg, mapping = aes(x= cyl, y = displ, group =drv)) + 
+  geom_boxplot(position = "dodge")
+```
+
+In contrast, below is the same plot as above, but with the "identity" position adjustment specified.  This plot looks different.
+```{r}
+ggplot(data=mpg, mapping = aes(x= cyl, y = displ, group =drv)) + 
+  geom_boxplot(position = "identity")
+```
+
+
+## Section 3.9.1
+### 2. What does `labs()` do? Read the documentation.
+`labs()` creates labels for graphs, including axis and legend labels, as well as plot titles.
+
+### 4. What does the plot below tell you about the relationship between city and highway mpg? Why is `coord_fixed()` important? What does `geom_abline()` do?
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_point() + 
+  geom_abline() +
+  coord_fixed()
+```
+
+The plot illustrates that there's a roughly linear, positive relationship between city mpg and highway mpg: as city mpg increases, highway mpg increases.  It also demonstrates that a given value of city mpg tends to map to a correspondingly higher value of highway mpg (e.g. values of 15 city miles per gallon map to values of highway miles per gallon that are all greater than 15).
+`coord_fixed()` here ensures that the x axis and the y axis are on the same scale, so that the same value on the x axis can more easily be compared to the same value on the y axis.
+The below plot shows the plot of `cty` and `hwy` without specifying `coord_fixed()`.
+```{r}
+ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_point() + 
+  geom_abline()
+```
+
+`geom_abline()` creates a diagonal line on the graph for reference.  The line shows where the points would lie if an observation had the same value on the x axis as it did on the y axis.  In this graph, it's apparent from the relative positions of the line and the points that values on the x axis don't have a 1:1 relationship with values on the y axis.
+
+
+## Section 4.4: #1 and #2 only
+### 1. Why does this code not work?
+```{r}
+my_variable <- 10
+my_varıable
+#> Error in eval(expr, envir, enclos): object 'my_varıable' not found
+```
+This code doesn't work because the "i" in the second line isn't an "i".
+The below code fixes the above code, returning the expected answer.
+```{r}
+my_variable <- 10
+my_variable
+```
+
+### 2. Tweak each of the following R commands so that they run correctly:
+
+```{r}
+#library(tidyverse)
+
+#ggplot(dota = mpg) + 
+#  geom_point(mapping = aes(x = displ, y = hwy))
+
+#fliter(mpg, cyl = 8)
+#filter(diamond, carat > 3)
+```
+
+Below are the tweaked commands:
+```{r}
+library(tidyverse)
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy))
+
+filter(mpg, cyl == 8)
+filter(diamonds, carat > 3)
+```
+
+## Section 5.2.4
+### 1. Find all flights that:
+#### Had an arrival delay of two or more hours
+```{r}
+filter(flights, arr_delay >= 120)
+```
+
+#### Flew to Houston (IAH or HOU)
+```{r}
+filter(flights, dest == "IAH" | dest == "HOU")
+```
+
+#### Were operated by United, American, or Delta
+```{r}
+filter(flights, carrier == "UA" | carrier == "AA" | carrier == "DL")
+```
+
+#### Departed in summer (July, August, and September)
+```{r}
+filter(flights, month %in% c(7,8,9))
+```
+
+#### Arrived more than two hours late, but didn’t leave late
+```{r}
+filter(flights, arr_delay > 120 & dep_delay <=0)
+```
+
+#### Were delayed by at least an hour, but made up over 30 minutes in flight
+```{r}
+filter(flights, dep_delay >=60 & arr_delay <= (dep_delay - 30))
+```
+
+#### Departed between midnight and 6am (inclusive)
+```{r}
+filter(flights, dep_time >= 0 & dep_time <=600)
+```
+
+### 3. How many flights have a missing `dep_time`? What other variables are missing? What might these rows represent?
+There are 8,255 flights with a missing `dep_time`.  The other variables that are missing are `dep_delay`, `arr_time`, `arr_delay`, `air_time`.  These rows might represent flights that were canceled.
+```{r}
+filter(flights, is.na(dep_time))
+```
+
+### 4. Why is `NA ^ 0` not missing? Why is `NA | TRUE` not missing? Why is `FALSE & NA` not missing? Can you figure out the general rule? (`NA * 0` is a tricky counterexample!)
+```{r}
+NA ^ 0
+NA | TRUE
+FALSE & NA
+NA * 0
+```
+
+`NA ^ 0` isn't missing because by definition, anything raised to the power of 0 is equal to one. `NA | TRUE` and `FALSE & NA` aren't missing because by definition, those statements would evaluate to `TRUE` and `FALSE`, respectively, no matter what value was placed there.  So as far as I can tell, the general rule is that operations with `NA` aren't missing if the operation has a certain answer by definition.  The counterexample, `NA * 0`, evaluates to `NA`, possibly because multiplication by 0 isn't defined as 0 in R.
+
+## Section 5.4.1
+### 1. Brainstorm as many ways as possible to select `dep_time`, `dep_delay`, `arr_time`, and `arr_delay` from flights.
+```{r}
+select(flights, dep_time, dep_delay, arr_time, arr_delay)
+
+vars <- c("dep_time", "dep_delay", "arr_time", "arr_delay")
+select(flights, one_of(vars))
+
+select(flights, starts_with("dep"), starts_with("arr"))
+```
+
+
+### 3. What does the `one_of()` function do? Why might it be helpful in conjunction with this vector?
+```{r}
+vars <- c("year", "month", "day", "dep_delay", "arr_delay")
+```
+The `one_of()` function allows you to select variables based on their names in a character vector, which you can assign to an object.  This makes selecting lists of variables easier, since you only have to type out all the variables that you want to select once.  It also makes the select verb easier to see, which can be useful if it's combined with many other data manipulations.
+
+```{r}
+vars <- c("year", "month", "day", "dep_delay", "arr_delay")
+select(flights, one_of(vars))
+```
