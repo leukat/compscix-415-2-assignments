@@ -1,0 +1,302 @@
+---
+title: "Homework 4"
+author: "Katherine Leu"
+date: "July 2, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r load_packages, warning=FALSE, message=FALSE}
+library(nycflights13)
+library(tidyverse)
+```
+
+## Section 5.6.7: 
+### 2. Come up with another approach that will give you the same output as `not_cancelled %>% count(dest)` and `not_cancelled %>% count(tailnum, wt = distance)` (without using `count()`).
+
+First, I look at the output to be recreated:
+```{r}
+not_cancelled <- flights %>% 
+  filter(!is.na(dep_delay), !is.na(arr_delay))
+
+not_cancelled %>% count(dest)
+not_cancelled %>% count(tailnum, wt = distance)
+```
+Here is a way to get the same output as `not_cancelled %>% count(dest)` without using `count()`:
+```{r}
+not_cancelled %>% group_by(dest) %>%
+  summarize(
+    count=n()
+)
+```
+Here is a way to get the same output as `not_cancelled %>% count(tailnum, wt = distance)` without using `count()`:
+```{r}
+not_cancelled %>% group_by(tailnum) %>%
+  summarize(
+    n = sum(distance)
+)
+```
+
+### 4. Look at the number of cancelled flights per day. Is there a pattern? Is the proportion of cancelled flights related to the average delay?
+
+Below, we calculate the number of canceled flights per day, the proportion of canceled flights per day, and the average delay: 
+```{r}
+canceledbyday <- flights %>% group_by(year, month, day) %>%
+  summarize(
+    canceled = sum(is.na(arr_delay) | is.na(dep_delay)),
+    prop_canceled = mean(is.na(arr_delay) | is.na(dep_delay)),
+    avg_delay = mean(dep_delay, na.rm=TRUE)
+  )
+canceledbyday
+```
+
+```{r}
+ggplot(data=canceledbyday) +
+    geom_line(mapping=aes(x=day, y=canceled)) +
+    #geom_line(mapping=aes(x=day, y=avg_delay), color="red") + 
+    facet_wrap(~month)
+```
+
+The number of canceled flights per day fluctuates quite a bit over the year, with cancellations especially frequent in June and July and the first half of December.  This may be because there are more people traveling during those times, hence more flights.
+
+Below is a scatterplot of the proportion of canceled flights against the average delay. It appears that there is a positive relationship between the proportion of canceled flights and the average delay.
+```{r}
+ggplot(data=canceledbyday) +
+    geom_point(mapping=aes(x=prop_canceled, y=avg_delay))
+```
+
+### 6. What does the `sort` argument to `count()` do. When might you use it?
+The `sort` argument to `count()` sorts the output in descending order by count.  You might use this if you want to look for patterns in your `group_by` variables by frequency, to see which group categories have the highest rate of frequency.
+
+
+### 5. [EXTRA CREDIT] Which carrier has the worst delays? Challenge: can you disentangle the effects of bad airports vs. bad carriers? Why/why not? (Hint: think about `flights %>% group_by(carrier, dest) %>% summarise(n())`)
+
+First, I look at average delays by carrier:
+```{r}
+flights %>% group_by(carrier) %>% 
+  summarize(
+    avg_delay = mean(dep_delay, na.rm=TRUE)) %>% 
+  ggplot(mapping=aes(x=carrier, y=avg_delay)) +
+    geom_col()
+```
+
+From the above graph, it looks like the carrier with the worst delays (here defined as the longest average delays) is F9, or Frontier Airlines, with EV, ExpressJet Airlines, a close second.
+
+To try to disentangle "bad carriers" from "bad airports", I look at the average delays by destination:
+```{r}
+badairport <- flights %>% group_by(dest) %>% 
+  summarize(
+    avg_delay = mean(dep_delay, na.rm=TRUE)
+  )
+```
+I further narrow these down to the airports with average delays at or above the 95th percentile.
+```{r}
+filter(badairport, avg_delay> quantile(avg_delay, 0.95, na.rm=TRUE))
+```
+
+It appears that the destination airports BHM, CAE, JAC, OKC, TUL, and TYS have the longest average delays, with CAE and TUL having particularly long delays.
+
+Next I see if the carriers with the longest delays tend to service the airports with the longest delays:
+```{r}
+flights %>% group_by(carrier, dest) %>% summarize(n()) %>% filter(dest %in% c("BHM","CAE","JAC","OKC","TUL","TYS"))
+```
+
+It appears that the carriers with the longest delays do in fact service the airports with the longest delays: Frontier Airlines and ExpressJet Airlines are among the only carriers with flights to the five "worst" airports, and have many more flights to those airports than other carriers do.  
+
+## Section 10.5: 
+### 1. How can you tell if an object is a tibble? (Hint: try printing `mtcars`, which is a regular data frame).
+Printing the data frame `mtcars`:
+```{r}
+mtcars
+```
+Printing the tibble `flights`:
+```{r}
+flights
+```
+You can tell that an object is a tibble because when printed, R tells you that it's a tibble.  In addition, the output from printing a tibble doesn't display all rows but rather just the first 10 rows and as many variables as will fit on the screen (with information about how many more rows and variables there are).  In contrast, printing a data frame will display all rows and variables.
+
+
+### 2. Compare and contrast the following operations on a data.frame and equivalent tibble. What is different? Why might the default data frame behaviours cause you frustration?
+```{r}
+#df <- data.frame(abc = 1, xyz = "a")
+#df$x
+#df[, "xyz"]
+#df[, c("abc", "xyz")]
+```
+
+First, I create the equivalent tibble and contrast the first set of operations:
+```{r}
+df <- data.frame(abc = 1, xyz = "a")
+tb <- tibble(abc = 1, xyz = "a")
+
+df$x
+tb$x
+```
+As shown above, the first operation, `$x`, returns the value of `xyz` when applied to the data frame.  When applied to the equivalent tibble, a `NULL` value is returned, because variables can't be extracted from tibbles using partial names.  This data frame behavior may cause frustration if there exist multiple variables in the same data frame that start with the same few letters--if you aren't precise in specifying the variable name, you may end up calling the wrong variable.
+
+```{r}
+df[, "xyz"]
+tb[, "xyz"]
+```
+The second operation, `[, "xyz"]`, returns the value and levels of the variable when applied to the data frame.  When applied to a tibble, it returns the value of the variable and provides information about the variable's type.  The default data frame behavior is to convert the character variable into a factor variable (which is why levels are displayed); this may be frustrating if you don't want your character variable to be treated as a factor.
+
+```{r}
+df[, c("abc", "xyz")]
+tb[, c("abc", "xyz")]
+```
+The third operation, `[, c("abc", "xyz")]`, returns the variable names and values when applied to the data frame, and returns the variable names, values, and types when applied to the tibble.  The default data frame behavior may cause frustration because you can't necessarily tell from the output what the types of the variables are.
+
+
+### 3. If you have the name of a variable stored in an object, e.g. `var <- "mpg"`, how can you extract the reference variable from a tibble?
+If you have the name of a variable stored in an object, you could extract that variable from a tibble using the name of the object and `[[`: 
+```{r}
+var <- "mpg"
+as_tibble(mtcars)[[var]]
+```
+
+(You cannot use `$`, which will throw an error because the tibble has no column named `var`.)
+
+### 6. What option controls how many additional column names are printed at the footer of a tibble?
+Using `print`, the `n_extra` option controls the number of additional column names printed at the footer of a tibble.  Below, first the default output for printing `flights` is shown.
+In the next command, `n_extra` is used to print column information for only 2 additional variables.
+```{r}
+flights
+print(flights, n_extra = 2)
+```
+
+## Section 12.3.3: 
+### 2. Why does this code fail? 
+```{r}
+#table4a %>% 
+#  gather(1999, 2000, key = "year", value = "cases")
+#> Error in inds_combine(.vars, ind_list): Position must be between 0 and n
+```
+This code fails because the year variables, `1999` and `2000`, need to be referred to with backticks around their names, since R doesn't recognize numbers as variable names otherwise.
+When this is fixed, the code works:
+```{r}
+table4a %>% 
+  gather(`1999`, `2000`, key = "year", value = "cases")
+```
+
+### 3. Why does spreading this tibble fail? How could you add a new column to fix the problem?
+```{r}
+people <- tribble(
+  ~name,             ~key,    ~value,
+  #-----------------|--------|------
+  "Phillip Woods",   "age",       45,
+  "Phillip Woods",   "height",   186,
+  "Phillip Woods",   "age",       50,
+  "Jessica Cordero", "age",       37,
+  "Jessica Cordero", "height",   156
+)
+```
+```{r}
+# people %>% spread(key= key, value=value)
+# Error: Duplicate identifiers for rows (1, 3)
+```
+Spreading this tibble fails because there are duplicate values in the first column, `name`.  This might have happened because the dataset includes observations collected on the same individuals at multiple time points, say multiple waves of the same survey.  Using this idea, you could fix the problem by adding a new column, `wave`, indicating the wave of the survey in which the measurement was taken.
+```{r}
+people2 <- tribble(
+  ~name,             ~key,    ~value, ~wave,
+  #-----------------|--------|-------|-----
+  "Phillip Woods",   "age",       45,     1,
+  "Phillip Woods",   "height",   186,     1,
+  "Phillip Woods",   "age",       50,     2,
+  "Jessica Cordero", "age",       37,     1,
+  "Jessica Cordero", "height",   156,     1
+)
+```
+```{r}
+people2 %>% spread(key= key, value=value)
+```
+
+
+### 4. Tidy the simple tibble below. Do you need to spread or gather it? What are the variables?
+```{r}
+preg <- tribble(
+  ~pregnant, ~male, ~female,
+  "yes",     NA,    10,
+  "no",      20,    12
+)
+```
+You need to gather this tibble, because "male" and "female" are values of sex, not variables. The variables are "pregnant" and "sex".
+
+```{r}
+preg %>% gather(male, female, key="sex", value= "cases")
+```
+
+## Section 12.4.3: 
+### 1. What do the `extra` and `fill` arguments do in `separate()`? Experiment with the various options for the following two toy datasets.
+```{r}
+#tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>% 
+#  separate(x, c("one", "two", "three"))
+
+#tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
+#  separate(x, c("one", "two", "three"))
+```
+
+The `extra` argument specifies how to treat character vectors if there are too many values for the number of columns specified. `extra` can take any of 3 options: "warn", "drop", and "merge". "Warn" provides a warning that there are too many values and drops the extras; "drop" drops the extras without a warning, and "merge" adds the extra value to the last column.
+Each of the options for `extra` is illustrated below:
+```{r}
+tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>% 
+  separate(x, c("one", "two", "three"), extra="warn")
+tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>% 
+  separate(x, c("one", "two", "three"), extra="drop")
+tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>% 
+  separate(x, c("one", "two", "three"), extra="merge")
+```
+
+The `fill` argument specifies how to treat character vectors if there are too few values for the number of columns specified. `fill` can take any of 3 options: "warn", "right", and "left". "Warn" provides a warning that there are too few values and assigns values starting from the rightmost column; "right" assigns values starting from the rightmost column without a warning, and "left" assigns values starting from the leftmost column.
+Each of the options for `fill` is illustrated below:
+
+```{r}
+tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
+  separate(x, c("one", "two", "three"), fill="warn")
+tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
+  separate(x, c("one", "two", "three"), fill="right")
+tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
+  separate(x, c("one", "two", "three"), fill="left")
+```
+
+### 2. Both `unite()` and `separate()` have a `remove` argument. What does it do? Why would you set it to `FALSE`?
+The `remove` argument in `unite()` and `separate()` specifies whether to include in your output tibble the original input column(s) that you used `unite()` or `separate()` to manipulate.
+You would set it to `FALSE` if you want to retain those original columns in the output tibble:
+
+```{r}
+tibble(x = c("a,b,c", "d,e,f", "g,h,i")) %>% 
+  separate(x, c("one", "two", "three"), remove=FALSE)
+```
+
+## Answer these questions:
+
+### Follow these steps:
+### - Download the baby_names.txt file from Canvas which is in the Homework 4 assignment section.
+### - Load this file into R correctly and take a glimpse of the output.
+### - Export this file as a csv file and call it ‘baby_names.csv’.
+### - Reload the baby_names.csv file and take another glimpse.
+### - Show all of your code and the output. There should be two data import lines of code, one data export line of code, and two glimpses of the data.
+
+1. Loading the TXT file into R:
+```{r}
+baby_txt <- read_delim(file = 'C:/Users/Katie/Documents/R/compscix-415-2-assignments/baby_names.txt', delim = "|")
+```
+2. Taking a glimpse of the TXT file:
+```{r}
+glimpse(baby_txt)
+```
+
+3. Exporting the file as a CSV file:
+```{r}
+baby_csv <- write_csv(baby_txt, path = 'C:/Users/Katie/Documents/R/compscix-415-2-assignments/baby_names.csv')
+```
+
+4. Reloading the new CSV file:
+```{r}
+baby_newcsv = read_csv(file = 'C:/Users/Katie/Documents/R/compscix-415-2-assignments/baby_names.csv')
+```
+5. Taking a glimpse of the new CSV file:
+```{r}
+glimpse(baby_newcsv)
+```
