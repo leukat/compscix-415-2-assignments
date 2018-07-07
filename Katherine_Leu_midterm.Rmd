@@ -2,9 +2,202 @@
 title: "COMPSCIX 415.2 Homework 5/Midterm"
 author: "Katherine Leu"
 date: "July 6, 2018"
-output: html_document
+output: 
+  html_document: 
+  toc: true
+  toc_depth: 3
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+LINK TO GITHUB REPOSITORY: []
+
+```{r}
+library(tidyverse)
+```
+
+## RStudio and R Markdown
+### 1. Use markdown headers in your document to clearly separate each midterm question and add a table of contents to your document.
+
+
+## The tidyverse packages
+### 1. Can you name which package is associated with each task below?
+  Plotting: `ggplot2`
+  
+  Data munging/wrangling: `dplyr`
+  
+  Reshaping (speading and gathering) data: `tidyr`
+  
+  Importing/exporting data: `readr`
+
+### 2. Now can you name two functions that you’ve used from each package that you listed above for these tasks?
+  Plotting: `geom_point()`, `coord_flip()`
+  
+  Data munging/wrangling: `filter()`, `select()`
+  
+  Reshaping data: `spread()`, `gather()`
+  
+  Importing/exporting data: `read_csv()`, `read_delim()`
+
+
+## R Basics
+### 1. Fix this code with the fewest number of changes possible so it works:
+```{r}
+#My_data.name___is.too00ooLong! <- c( 1 , 2   , 3 )
+```
+
+Fixed code:
+```{r}
+My_data.name___is.too00ooLong <- c( 1 , 2   , 3 )
+My_data.name___is.too00ooLong
+```
+
+
+### 2. Fix this code so it works:
+```{r}
+#my_string <- C('has', 'an', 'error', 'in', 'it)
+```
+
+Fixed code: 
+```{r}
+my_string <- c('has', 'an', 'error', 'in', 'it')
+my_string
+```
+
+### 3. Look at the code below and comment on what happened to the values in the vector.
+```{r}
+my_vector <- c(1, 2, '3', '4', 5)
+my_vector
+```
+The values in the vector all turned into character values, whereas only some had been entered as character values and others had been entered as numeric values. It appears that concatenating the values and assigning them to an object forces all of the values to be the same type.
+
+
+## Data import/export
+### 1. Download the rail_trail.txt file from Canvas (in the Midterm Exam section) and successfully import it into R. Prove that it was imported successfully by including your import code and taking a `glimpse` of the result.
+```{r}
+#Import the file
+railtrail_txt <- read_delim(file= "C:/Users/Katie/Documents/R/compscix-415-2-assignments/rail_trail.txt", delim = "|")
+#Take a glimpse
+glimpse(railtrail_txt)
+```
+
+### 2. Export the file into a comma-separated file and name it “rail_trail.csv”. Make sure you define the path correctly so that you know where it gets saved. Then reload the file. Include your export and import code and take another `glimpse`.
+```{r}
+#Export the file as CSV
+railtrail_csv <- write_csv(railtrail_txt, path = "C:/Users/Katie/Documents/R/compscix-415-2-assignments/rail_trail.csv")
+#Reload the file
+railtrail_newcsv <- read_csv(file= "C:/Users/Katie/Documents/R/compscix-415-2-assignments/rail_trail.csv")
+#Take a glimpse 
+glimpse(railtrail_newcsv)
+```
+
+## Visualization
+### 1. Critique this graphic: give only three examples of what is wrong with this graphic. Be concise.
+ONE THING THAT'S WRONG WITH IT IS THAT THE PERCENTAGES DON'T ADD UP TO 100??
+ANOTHER THING IS THAT THEY'RE CIRCLES AND THE SIZE OF CIRCLES IS DIFFICULT TO COMPARE?
+JARRING THAT AGE CATEGORIES REPRESENTED NEXT TO GENDER?  COULD DO WITH MORE SEPARATION? AND ALSO LABEL AGE CATEGORIES?
+
+### 2. Reproduce this graphic using the `diamonds` data set.
+```{r}
+ggplot(diamonds, mapping=aes(x=cut, y=carat, fill=color), color="black") +
+  geom_boxplot(position="identity") + 
+  coord_flip() + 
+  labs(x="CUT OF DIAMOND", y = "CARAT OF DIAMOND")
+```
+
+
+### 3. The previous graphic is not very useful. We can make it much more useful by changing one thing about it. Make the change and plot it again.
+```{r}
+ggplot(diamonds, mapping=aes(x=cut, y=carat, fill=color), color="black") +
+  geom_boxplot() + 
+  coord_flip() + 
+  labs(x="CUT OF DIAMOND", y = "CARAT OF DIAMOND")
+```
+
+## Data munging and wrangling
+### 1. Is this data “tidy”? If yes, leave it alone and go to the next problem. If no, make it tidy. 
+These data are not tidy, because the values under "type", "cases" and "population", should actually be their own variables.  Therefore, this dataset needs to be spread.
+```{r}
+spread(table2, key="type", value="count")
+```
+
+### 2. Create a new column in the `diamonds` data set called `price_per_carat` that shows the price of each diamond per carat (hint: divide). Only show me the code, not the output.
+
+```{r}
+diamonds %>% mutate(price_per_carat = price/carat)
+```
+
+### 3. For each `cut` of diamond in the `diamonds` data set, how many diamonds, and what proportion, have a price > 10000 and a carat < 1.5? There are several ways to get to an answer, but your solution must use the data wrangling verbs from the tidyverse in order to get credit.
+  Do the results make sense? Why?
+  Do we need to be wary of any of these numbers? Why?
+```{r}
+diamonds %>% group_by(cut) %>% 
+  summarize(
+      n = n(),
+      pricey_n = sum(price > 10000 & carat < 1.5, na.rm=TRUE),
+      pricey_prop = mean(price > 10000 & carat < 1.5, na.rm=TRUE)
+  )
+```
+The results make sense because the best cut, "Ideal", has the highest number and proportion of very expensive diamonds (here, diamonds of less than 1.5 carats worth over $10,000).
+BUT WE MIGHT NEED TO BE WARY OF SOME OF THE NUMBERS BECAUSE...OUTLIERS?
+
+
+## EDA
+
+### Take a look at the txhousing data set that is included with the ggplot2 package and answer these questions:
+
+### 1. During what time period is this data from?
+```{r}
+txhousing %>% select(year, month, date) %>% arrange() %>% 
+  summarize( start = min(date),
+             end = max(date))
+```
+The data spans the time period between January 2000 and July 2015.
+
+### 2. How many cities are represented?
+```{r}
+txhousing %>% group_by(city) %>% summarize(n_per_city = n()) %>% summarize(citynum = n())
+```
+There are 46 cities represented in the data.
+
+### 3. Which city, month and year had the highest number of sales?
+```{r}
+txhousing %>% group_by(city,month,year) %>% select(city, month, year, sales) %>% arrange(desc(sales))
+```
+
+MIGHT WANT TO ASK WHAT EXACTLY THIS QUESTION IS ASKING FOR?  but, it looks like the highest number of sales occurred in Houston in July 2015.
+
+### 4. What kind of relationship do you think exists between the number of listings and the number of sales? Check your assumption and show your work.
+
+```{r}
+
+```
+
+
+
+### 5. What proportion of sales is missing for each city?
+```{r}
+
+```
+
+### 6. Looking at only the cities and months with greater than 500 sales:
+
+  Are the distributions of the median sales price (column name median), when grouped by city, different? The same? Show your work.
+```{r}
+
+```
+
+  Any cities that stand out that you’d want to investigate further?
+```{r}
+
+```
+
+  Why might we want to filter out all cities and months with sales less than 500?
+```{r}
+
+```
+
+
+## Git and Github
+### To demonstrate your use of git and Github, at the top of your document put a hyperlink to your Github repository.
