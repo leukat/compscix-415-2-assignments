@@ -4,25 +4,27 @@ author: "Katherine Leu"
 date: "July 6, 2018"
 output: 
   html_document: 
-  toc: true
-  toc_depth: 3
+    toc: true
+    toc_depth: 2
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-LINK TO GITHUB REPOSITORY: []
+LINK TO GITHUB REPOSITORY: <https://github.com/leukat/compscix-415-2-assignments>
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 library(tidyverse)
 ```
 
-## RStudio and R Markdown
-### 1. Use markdown headers in your document to clearly separate each midterm question and add a table of contents to your document.
+# RStudio and R Markdown
+## Question 1 
+### Use markdown headers in your document to clearly separate each midterm question and add a table of contents to your document.
 
 
-## The tidyverse packages
-### 1. Can you name which package is associated with each task below?
+# The tidyverse packages
+## Question 1
+### Can you name which package is associated with each task below?
   Plotting: `ggplot2`
   
   Data munging/wrangling: `dplyr`
@@ -31,7 +33,8 @@ library(tidyverse)
   
   Importing/exporting data: `readr`
 
-### 2. Now can you name two functions that you’ve used from each package that you listed above for these tasks?
+## Question 2
+### Now can you name two functions that you’ve used from each package that you listed above for these tasks?
   Plotting: `geom_point()`, `coord_flip()`
   
   Data munging/wrangling: `filter()`, `select()`
@@ -41,8 +44,9 @@ library(tidyverse)
   Importing/exporting data: `read_csv()`, `read_delim()`
 
 
-## R Basics
-### 1. Fix this code with the fewest number of changes possible so it works:
+# R Basics
+## Question 1
+### Fix this code with the fewest number of changes possible so it works:
 ```{r}
 #My_data.name___is.too00ooLong! <- c( 1 , 2   , 3 )
 ```
@@ -53,8 +57,8 @@ My_data.name___is.too00ooLong <- c( 1 , 2   , 3 )
 My_data.name___is.too00ooLong
 ```
 
-
-### 2. Fix this code so it works:
+## Question 2
+### Fix this code so it works:
 ```{r}
 #my_string <- C('has', 'an', 'error', 'in', 'it)
 ```
@@ -65,7 +69,8 @@ my_string <- c('has', 'an', 'error', 'in', 'it')
 my_string
 ```
 
-### 3. Look at the code below and comment on what happened to the values in the vector.
+## Question 3
+### Look at the code below and comment on what happened to the values in the vector.
 ```{r}
 my_vector <- c(1, 2, '3', '4', 5)
 my_vector
@@ -73,8 +78,9 @@ my_vector
 The values in the vector all turned into character values, whereas only some had been entered as character values and others had been entered as numeric values. It appears that concatenating the values and assigning them to an object forces all of the values to be the same type.
 
 
-## Data import/export
-### 1. Download the rail_trail.txt file from Canvas (in the Midterm Exam section) and successfully import it into R. Prove that it was imported successfully by including your import code and taking a `glimpse` of the result.
+# Data import/export
+## Question 1
+### Download the rail_trail.txt file from Canvas (in the Midterm Exam section) and successfully import it into R. Prove that it was imported successfully by including your import code and taking a `glimpse` of the result.
 ```{r}
 #Import the file
 railtrail_txt <- read_delim(file= "C:/Users/Katie/Documents/R/compscix-415-2-assignments/rail_trail.txt", delim = "|")
@@ -82,7 +88,8 @@ railtrail_txt <- read_delim(file= "C:/Users/Katie/Documents/R/compscix-415-2-ass
 glimpse(railtrail_txt)
 ```
 
-### 2. Export the file into a comma-separated file and name it “rail_trail.csv”. Make sure you define the path correctly so that you know where it gets saved. Then reload the file. Include your export and import code and take another `glimpse`.
+## Question 2
+### Export the file into a comma-separated file and name it “rail_trail.csv”. Make sure you define the `path` correctly so that you know where it gets saved. Then reload the file. Include your export and import code and take another `glimpse`.
 ```{r}
 #Export the file as CSV
 railtrail_csv <- write_csv(railtrail_txt, path = "C:/Users/Katie/Documents/R/compscix-415-2-assignments/rail_trail.csv")
@@ -92,13 +99,16 @@ railtrail_newcsv <- read_csv(file= "C:/Users/Katie/Documents/R/compscix-415-2-as
 glimpse(railtrail_newcsv)
 ```
 
-## Visualization
-### 1. Critique this graphic: give only three examples of what is wrong with this graphic. Be concise.
-ONE THING THAT'S WRONG WITH IT IS THAT THE PERCENTAGES DON'T ADD UP TO 100??
-ANOTHER THING IS THAT THEY'RE CIRCLES AND THE SIZE OF CIRCLES IS DIFFICULT TO COMPARE?
-JARRING THAT AGE CATEGORIES REPRESENTED NEXT TO GENDER?  COULD DO WITH MORE SEPARATION? AND ALSO LABEL AGE CATEGORIES?
+# Visualization
+## Question 1
+### Critique this graphic: give only three examples of what is wrong with this graphic. Be concise.
+One thing that's not effective about the graphic is that the size of the circles tends to overstate how large or small the "Yes" category is relative to the "No" category, since the areas of the circles don't correspond to the numbers they represent.
+Another issue is that the percentages for each demographic group don't add up to 100, so the viewer is left wondering where the remaining percentage went.
+Finally, it's odd that all of the age categories have the same color, but the gender categories (men and women) are represented by two different colors.
 
-### 2. Reproduce this graphic using the `diamonds` data set.
+## Question 2
+### Reproduce this graphic using the `diamonds` data set.
+The following code reproduces the graphic:
 ```{r}
 ggplot(diamonds, mapping=aes(x=cut, y=carat, fill=color), color="black") +
   geom_boxplot(position="identity") + 
@@ -106,8 +116,9 @@ ggplot(diamonds, mapping=aes(x=cut, y=carat, fill=color), color="black") +
   labs(x="CUT OF DIAMOND", y = "CARAT OF DIAMOND")
 ```
 
-
-### 3. The previous graphic is not very useful. We can make it much more useful by changing one thing about it. Make the change and plot it again.
+## Question 3
+### The previous graphic is not very useful. We can make it much more useful by changing one thing about it. Make the change and plot it again.
+I remove the `position="identity"` setting so that the default setting of `position="dodge"` is used:
 ```{r}
 ggplot(diamonds, mapping=aes(x=cut, y=carat, fill=color), color="black") +
   geom_boxplot() + 
@@ -115,22 +126,24 @@ ggplot(diamonds, mapping=aes(x=cut, y=carat, fill=color), color="black") +
   labs(x="CUT OF DIAMOND", y = "CARAT OF DIAMOND")
 ```
 
-## Data munging and wrangling
-### 1. Is this data “tidy”? If yes, leave it alone and go to the next problem. If no, make it tidy. 
+# Data munging and wrangling
+## Question 1
+### Is this data “tidy”? If yes, leave it alone and go to the next problem. If no, make it tidy. 
 These data are not tidy, because the values under "type", "cases" and "population", should actually be their own variables.  Therefore, this dataset needs to be spread.
 ```{r}
 spread(table2, key="type", value="count")
 ```
 
-### 2. Create a new column in the `diamonds` data set called `price_per_carat` that shows the price of each diamond per carat (hint: divide). Only show me the code, not the output.
+## Question 2
+### Create a new column in the `diamonds` data set called `price_per_carat` that shows the price of each diamond per carat (hint: divide). Only show me the code, not the output.
 
-```{r}
+```{r, results="hide"}
 diamonds %>% mutate(price_per_carat = price/carat)
 ```
 
-### 3. For each `cut` of diamond in the `diamonds` data set, how many diamonds, and what proportion, have a price > 10000 and a carat < 1.5? There are several ways to get to an answer, but your solution must use the data wrangling verbs from the tidyverse in order to get credit.
-  Do the results make sense? Why?
-  Do we need to be wary of any of these numbers? Why?
+## Question 3
+### For each `cut` of diamond in the `diamonds` data set, how many diamonds, and what proportion, have a price > 10000 and a carat < 1.5? There are several ways to get to an answer, but your solution must use the data wrangling verbs from the tidyverse in order to get credit.
+I create variables representing the count and proportion of diamonds with price > 10,000 and carat < 1.5.
 ```{r}
 diamonds %>% group_by(cut) %>% 
   summarize(
@@ -139,65 +152,92 @@ diamonds %>% group_by(cut) %>%
       pricey_prop = mean(price > 10000 & carat < 1.5, na.rm=TRUE)
   )
 ```
-The results make sense because the best cut, "Ideal", has the highest number and proportion of very expensive diamonds (here, diamonds of less than 1.5 carats worth over $10,000).
-BUT WE MIGHT NEED TO BE WARY OF SOME OF THE NUMBERS BECAUSE...OUTLIERS?
+### Do the results make sense? Why?
+The results make sense because the best cut, "Ideal", has the highest number and proportion of very expensive diamonds (here, diamonds of less than 1.5 carats worth over $10,000), and the number and proportion of very expensive diamonds increases with quality of cut.
 
+### Do we need to be wary of any of these numbers? Why?  
+We might need to be wary of the small numbers of these diamonds that have "fair" and "good" cuts, because these are probably outliers.
 
-## EDA
+# EDA
 
-### Take a look at the txhousing data set that is included with the ggplot2 package and answer these questions:
-
-### 1. During what time period is this data from?
+## Question 1
+### Take a look at the `txhousing` data set that is included with the `ggplot2` package and answer these questions:
+### During what time period is this data from?
 ```{r}
-txhousing %>% select(year, month, date) %>% arrange() %>% 
-  summarize( start = min(date),
-             end = max(date))
+txhousing_dates <- txhousing %>% select(year, month, date) %>% arrange() %>% 
+  summarize( startdate = min(date),
+             enddate = max(date))
+txhousing_dates$startdate
+txhousing_dates$enddate
 ```
 The data spans the time period between January 2000 and July 2015.
 
-### 2. How many cities are represented?
+## Question 2
+### How many cities are represented?
 ```{r}
 txhousing %>% group_by(city) %>% summarize(n_per_city = n()) %>% summarize(citynum = n())
 ```
 There are 46 cities represented in the data.
 
-### 3. Which city, month and year had the highest number of sales?
+## Question 3
+### Which city, month and year had the highest number of sales?
 ```{r}
 txhousing %>% group_by(city,month,year) %>% select(city, month, year, sales) %>% arrange(desc(sales))
 ```
+It looks like the highest number of sales occurred in Houston in July 2015.
 
-MIGHT WANT TO ASK WHAT EXACTLY THIS QUESTION IS ASKING FOR?  but, it looks like the highest number of sales occurred in Houston in July 2015.
+## Question 4
+### What kind of relationship do you think exists between the number of listings and the number of sales? Check your assumption and show your work.
 
-### 4. What kind of relationship do you think exists between the number of listings and the number of sales? Check your assumption and show your work.
-
+I would guess that the number of listings and the number of sales have a positive relationship, since the more listings there are, the more opportunity there is for sales to happen.
+Below, I plot a scatterplot of the number of listings to the number of sales to check if there is a positive relationship between the two.
 ```{r}
-
+txhousing %>% ggplot(mapping =aes(x=listings, y =sales)) + 
+  geom_point()
 ```
 
+Looking at the scatterplot, there does appear to be a positive relationship between listings and sales.
 
-
-### 5. What proportion of sales is missing for each city?
+## Question 5
+### What proportion of `sales` is missing for each city?
 ```{r}
-
+txhousing %>% group_by(city) %>% 
+  summarize(
+    prop_missing = mean(is.na(sales))
+  )
 ```
 
-### 6. Looking at only the cities and months with greater than 500 sales:
+Most cities have no sales data missing, but several cities do, for example Brazoria County with 7.5% of its sales data missing, and Waco with 10.2% of its sales data missing.  South Padre Island has an especially high proportion of missing sales data (62.0%).
 
-  Are the distributions of the median sales price (column name median), when grouped by city, different? The same? Show your work.
+## Question 6
+### Looking at only the cities and months with greater than 500 sales:
+### Are the distributions of the median sales price (column name median), when grouped by city, different? The same? Show your work.
+
+Below, I show the distribution of the median sales price for each city.
 ```{r}
-
+txhousing %>% filter(sales > 500) %>% group_by(city) %>%
+  ggplot(mapping= aes(x= median)) + 
+    geom_histogram() +
+    facet_wrap(~city)
 ```
 
-  Any cities that stand out that you’d want to investigate further?
-```{r}
+The distribution of the median sales price is not the same for each city.  Some cities' distributions seem to have a roughly bimodal shape, such as those for Austin and San Antonio.  Other cities have very well-defined peak median values (Dallas, Denton County, Houston, NE Tarrant County).  Finally, some cities have fairly flat distributions, such as Bay Area, Fort Bend, and Montgomery County.
 
+### Any cities that stand out that you’d want to investigate further?
+I'd want to investigate the cities with bimodal distributions, as the distribution suggests two classes of housing listings and I'd want to know more about what characterizes those distinct classes.  Also, I'd want to look more closely at the median prices for Fort Worth, which seems to have a high frequency of one particular median price.
+
+### Why might we want to filter out all cities and months with sales less than 500?
+We might want to filter out all cities and months with sales less than 500 to limit our analysis to only the larger cities with the most sales.  Excluding cities and months with sales less than 500 only includes the 14 largest of the 46 cities in the dataset.
+```{r}
+txhousing %>% group_by(city, month) %>%
+  summarize(
+    lessthan500 = sum(sales <=500, na.rm=TRUE),
+    morethan500 = sum(sales > 500, na.rm=TRUE)
+  )
+```
+```{r}
+txhousing %>% filter(sales > 500) %>% group_by(city) %>% summarize(n_per_city_500 = n()) %>% summarize(citynum_500 = n())
 ```
 
-  Why might we want to filter out all cities and months with sales less than 500?
-```{r}
-
-```
-
-
-## Git and Github
+# Git and Github
 ### To demonstrate your use of git and Github, at the top of your document put a hyperlink to your Github repository.
