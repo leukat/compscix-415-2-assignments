@@ -15,61 +15,57 @@ library(tidyverse)
 
 ## Exercise 1
 
-### What variables are in this data set?
+### 1. What variables are in this data set?
 ```{r}
 ?Whickham
 ```
 The variables in this data set are `outcome`, `smoker`, and `age`.
 
-### How many observations are there and what does each represent?
+### 2. How many observations are there and what does each represent?
 There are 1314 observations, and each one represents a study participant (who were all women from the electoral roll in Whickham between 1972 and 1974).
 
-### Create a table (use the R code below as a guide) and a visualization of the relationship between smoking status and outcome, ignoring age. What do you see? Does it make sense?
+### 3. Create a table (use the R code below as a guide) and a visualization of the relationship between smoking status and outcome, ignoring age. What do you see? Does it make sense?
+
+Below is the table of smoking status and outcome:
 ```{r}
-Whickham %>% count(smoker, outcome)
+(smoke_count <- Whickham %>% count(smoker, outcome))
 ```
 
-EDIT THIS VISUALIZATION
+Here is the visualization of the data:
 ```{r} 
-Whickham %>% group_by(smoker) %>% 
-  summarize(
-    dead_prop = mean(outcome == "Dead", na.rm=TRUE),
-    dead_n = sum(outcome=="Dead", na.rm=TRUE),
-    alive_prop=mean(outcome == "Alive", na.rm=TRUE),
-    alive_n = sum(outcome=="Alive", na.rm=TRUE)
-  ) %>%
-  ggplot(mapping = aes(x=smoker, y=dead_prop)) + 
-    geom_col()
+smoke_count %>% 
+  ggplot() + 
+    geom_bar(mapping=aes(x=smoker, y=n, fill=outcome), stat="identity", position="fill") + 
+  labs(x="Smoker status", y="Proportion of outcome", title="20-Year Outcome by Smoker Status")
 ```
 
+It looks like a larger proportion of those who don't smoke are dead, while a smaller proportion of those who smoke are dead. This doesn't make sense, since we know that smoking should make people more likely to die, over time.
 
-It looks like a smaller proportion of those who smoke are dead, while a larger proportion of those who don't smoke are dead. This doesn't make sense, since we know that smoking should make people more likely to die.
-
-
-### Recode the `age` variable into an ordered factor with three categories: age <= 44, age > 44 & age <= 64, and age > 64. Now, recreate visualization from above, but facet on your new age factor. What do you see? Does it make sense?
+### 4. Recode the `age` variable into an ordered factor with three categories: age <= 44, age > 44 & age <= 64, and age > 64. Now, recreate visualization from above, but facet on your new age factor. What do you see? Does it make sense?
 
 First I recode age as an ordered factor:
 ```{r}
-age <- Whickham$age
-age_cat <- case_when(age<=44 ~ 'age<=44', 
-                    age>44 & age<=64 ~ 'age>44 & age<=64',
-                    age>64 ~ 'age>64')
-age_cat <- fct_relevel(age_cat,'age<=44', 'age>44 & age<=64', 'age>64')
+age_cat <- Whickham$age
+Whickham$age_cat <- case_when(Whickham$age <= 44 ~ 'age<=44', 
+                    Whickham$age > 44 & Whickham$age <= 64 ~ 'age>44 & age<=64',
+                    Whickham$age > 64 ~ 'age>64')
+Whickham$age_cat_fct <-factor(Whickham$age_cat)
+```
+```{r}
+(smoke_count_age <- Whickham %>% count(smoker, outcome, age_cat_fct))
 ```
 
-BLARGH
+I then recreate my visualization above, but faceting by the new age group categories:
 ```{r} 
-#Whickham %>% group_by(smoker) %>% 
-#  summarize(
-#    dead_prop = mean(outcome == "Dead", na.rm=TRUE),
-#    dead_n = sum(outcome=="Dead", na.rm=TRUE),
-#    alive_prop=mean(outcome == "Alive", na.rm=TRUE),
-#    alive_n = sum(outcome=="Alive", na.rm=TRUE)
-#  ) %>%
-#  ggplot() + 
-#    geom_col(mapping = aes(x=smoker, y=dead_prop)) + 
-#    facet_wrap(~age_cat)
+smoke_count_age %>% 
+  ggplot() + 
+    geom_bar(mapping=aes(x=smoker, y=n, fill=outcome), stat="identity", position="fill") +
+    facet_wrap(~age_cat_fct) + 
+    labs(x="Smoker status", y="Proportion of outcome", title="20-Year Outcome by Smoker Status")
 ```
+
+When the outcomes are divided by age group, a slightly higher proportion of smokers in each age group has died, compared to the proportion of non-smokers in the same age group who have died.  This is more in line with what we'd expect, as it demonstrates that those who smoke are more likely to die sooner.
+
 
 ## Exercise 2
 ### 1. Generate a random sample of size n = 10000 from a gamma(1,2) distribution and plot a histogram or density curve. Use the code below to help you get your sample.
@@ -85,16 +81,14 @@ I plot a density curve of the gamma distribution random sample below:
 gamma_samp %>% ggplot(mapping=aes(x=x)) + geom_density()
 ```
 
-### 2. What is the mean and standard deviation of your sample? They should both be close to 2 because for a gamma distribution:
-mean = shape x scale
-variance = shape x scale^2
+### 2. What is the mean and standard deviation of your sample? They should both be close to 2 because for a gamma distribution: mean = shape x scale; variance = shape x scale^2
 ```{r}
 gamma_samp %>% summarize(
   gamma_mean = mean(x),
   gamma_sd = sd(x)
 )
 ```
-The mean is 2.02 and the standard deviation is 2.01, which are both indeed close to 2.
+The mean and the standard deviation are indeed both close to 2.
 
 ### 3. Pretend the distribution of our population of data looks like the plot above. Now take a sample of size n = 30 from a Gamma(1,2) distribution, plot the histogram or density curve, and calculate the mean and standard deviation.
 
@@ -141,9 +135,9 @@ mean_samp %>% summarize(
 ```
 
 ### 7. Did anything surprise you about your answers to #6?
-NOT SURE.
+The mean of the sample means is close to 2, as it had been, but the standard deviation of the sample means is much smaller than 2, unlike the standard deviations for the samples.
 
-### 8. According to the Central Limit Theorem, the mean of your sampling distribution should be very close to 2, and the standard deviation of your sampling distribution should be close to σn−−√=230−−√=0.365. Repeat #4-#6, but now with a sample of size n = 300 instead. Do your results match up well with the theorem?
+### 8. According to the Central Limit Theorem, the mean of your sampling distribution should be very close to 2, and the standard deviation of your sampling distribution should be close to σ/(√n) = 2/(√30) = 0.365. Repeat #4-#6, but now with a sample of size n = 300 instead. Do your results match up well with the theorem?
 
 ```{r}
 # create a vector with 10000 NAs
@@ -166,7 +160,7 @@ mean_samp_300 %>% summarize(
   mean_samp_300_sd = sd(mean_samp_300)
 )
 ```
-Yes, my results match up well with the theorem.  The mean of the sampling distribution is close to 2, and its standard deviation is 0.1146, which is close to what the formula would predict for n= 300:
+Yes, my results match up well with the theorem.  The mean of the sampling distribution is close to 2, and its standard deviation is close to what the formula would predict for n= 300:
 ```{r}
 se_300 <- 2/sqrt(300)
 se_300
