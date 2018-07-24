@@ -1,0 +1,171 @@
+---
+title: "COMPSCIX 415.2 Homework 7"
+author: "Katherine Leu"
+date: "July 24, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r warning=FALSE, message=FALSE}
+library(tidyverse)
+library(broom)
+```
+
+
+## Exercise 1
+### Load the train.csv dataset into R. How many observations and columns are there?
+```{r}
+houseprices <- read.csv(file="C:/Users/Katie/Documents/R/compscix-415-2-assignments/train.csv")
+as_tibble(houseprices)
+```
+
+There are 1460 observations (rows) and 81 columns.
+
+## Exercise 2
+### Visualize the distribution of `SalePrice`.
+```{r}
+houseprices %>% ggplot() +
+  geom_histogram(mapping=aes(x=SalePrice))
+```
+
+### Visualize the covariation between `SalePrice` and `Neighborhood`.
+```{r}
+houseprices %>% ggplot() + 
+  geom_boxplot(mapping=aes(x=reorder(Neighborhood, SalePrice, FUN=median), y=SalePrice)) + 
+  labs(x="Neighborhood", y="Sale Price") +
+  coord_flip()
+```
+
+### Visualize the covariation between `SalePrice` and `OverallQual`.
+```{r}
+houseprices %>% ggplot(mapping=aes(group=OverallQual, x=OverallQual, y=SalePrice)) + 
+  geom_boxplot()
+```
+
+
+## Exercise 3
+### Our target is called `SalePrice`. First, we can fit a simple regression model consisting of only the intercept (the average of `SalePrice`). Fit the model and then use the `broom` package to take a look at the coefficient, compare the coefficient to the average value of `SalePrice`, and take a look at the R-squared.
+```{r}
+# Intercept-only model
+houseprices_lm <- lm(formula= SalePrice ~ 1, data = houseprices)
+tidy(houseprices_lm)
+avgSalePrice = mean(houseprices$SalePrice)
+avgSalePrice
+
+glance(houseprices_lm)
+```
+The coefficient of the intercept-only model is equal to the average of `SalePrice`, 180921.2.  The R-squared value is 0, which means the model is not explaining any of the variance in the data.
+
+## Exercise 4
+### Now fit a linear regression model using `GrLivArea`, `OverallQual`, and `Neighborhood` as the features. Don’t forget to look at `data_description.txt` to understand what these variables mean. Ask yourself these questions before fitting the model:
+### What kind of relationship will these features have with our target?
+### Can the relationship be estimated linearly?
+### Are these good features, given the problem we are trying to solve?
+### After fitting the model, output the coefficients and the R-squared using the broom package.
+
+```{r}
+houseprices_lm2 <- lm(formula= SalePrice ~ GrLivArea + OverallQual + Neighborhood, data = houseprices)
+tidy(houseprices_lm2)
+glance(houseprices_lm2)
+```
+
+### Answer these questions:
+### How would you interpret the coefficients on `GrLivArea` and `OverallQual`?
+For `GrLivArea`, the coefficient is interpreted as: with a unit increase in the aboveground square footage of living space, holding house quality and neighborhood constant, the sale price will increase on average by about $56.
+
+For `OverallQual`, the coefficient is interpreted as: with a unit increase in the quality rating of the house's finish and material, holding square footage and neighborhood constant, the sale price will increase on average by about $20,951.
+
+### How would you interpret the coefficient on `NeighborhoodBrkSide`?
+Compared to a house in the neighborhood of Bloomington Heights, a house in the neighborhood of Brookside, holding square footage and house quality constant, will cost about $13,025 less, on average.
+
+### Are the features significant?
+The features `GrLivArea` and `OverallQual` are both very statistically significant, with p-values of very close to 0.  Certain of the values of `Neighborhood` have p-values that are significant at the 0.05 level, though not all are.
+
+### Are the features practically significant?
+The coefficients for `OverallQual` and `Neighborhood` seem to be practically significant, since in dollar terms $20,951 (the coefficient for `OverallQual`) is quite a bit of money, and the dollar value of the coefficients on most of the values of `Neighborhood` are similarly large.  However, the coefficient for `GrLivArea` is only $55, which is a pretty inconsequential value in the context of house prices. 
+
+### Is the model a good fit?
+The model's R-squared value is 0.79 (0.78 for adjusted R-squared), which is pretty high: the model explains 79 percent of the variance in house prices.  Thus, the model fits pretty well.
+
+## Exercise 5 (OPTIONAL - won’t be graded)
+### Feel free to play around with linear regression. Add some other features and see how the model results change.
+```{r}
+houseprices_lm3 <- lm(formula= SalePrice ~ GrLivArea + OverallQual + Neighborhood + Condition1, data = houseprices)
+tidy(houseprices_lm3)
+glance(houseprices_lm3)
+```
+
+```{r}
+houseprices_lm4 <- lm(formula= SalePrice ~ GrLivArea + OverallQual + Neighborhood + HouseStyle, data = houseprices)
+tidy(houseprices_lm4)
+glance(houseprices_lm4)
+```
+
+
+```{r}
+houseprices_lm5 <- lm(formula= SalePrice ~ GrLivArea + OverallQual + Neighborhood + YrSold, data = houseprices)
+tidy(houseprices_lm5)
+glance(houseprices_lm5)
+```
+
+
+## Exercise 6
+### One downside of the linear model is that it is sensitive to unusual values because the distance incorporates a squared term. Fit a linear model to the simulated data below (use y as the target and x as the feature), and look at the resulting coefficients and R-squared. Rerun it about 5-6 times to generate different simulated datasets. What do you notice about the model’s coefficient on x and the R-squared values?
+
+```{r}
+sim1a <- tibble(
+  x = rep(1:10, each = 3),
+  y = x * 1.5 + 6 + rt(length(x), df = 2)
+)
+sim1a_lm <- lm(y ~ x, data=sim1a)
+tidy(sim1a_lm)
+glance(sim1a_lm)
+```
+```{r}
+sim1b <- tibble(
+  x = rep(1:10, each = 3),
+  y = x * 1.5 + 6 + rt(length(x), df = 2)
+)
+sim1b_lm <- lm(y ~ x, data=sim1b)
+tidy(sim1b_lm)
+glance(sim1b_lm)
+```
+```{r}
+sim1c <- tibble(
+  x = rep(1:10, each = 3),
+  y = x * 1.5 + 6 + rt(length(x), df = 2)
+)
+sim1c_lm <- lm(y ~ x, data=sim1c)
+tidy(sim1c_lm)
+glance(sim1c_lm)
+```
+```{r}
+sim1d <- tibble(
+  x = rep(1:10, each = 3),
+  y = x * 1.5 + 6 + rt(length(x), df = 2)
+)
+sim1d_lm <- lm(y ~ x, data=sim1d)
+tidy(sim1d_lm)
+glance(sim1d_lm)
+```
+```{r}
+sim1e <- tibble(
+  x = rep(1:10, each = 3),
+  y = x * 1.5 + 6 + rt(length(x), df = 2)
+)
+sim1e_lm <- lm(y ~ x, data=sim1e)
+tidy(sim1e_lm)
+glance(sim1e_lm)
+```
+```{r}
+sim1f <- tibble(
+  x = rep(1:10, each = 3),
+  y = x * 1.5 + 6 + rt(length(x), df = 2)
+)
+sim1f_lm <- lm(y ~ x, data=sim1f)
+tidy(sim1f_lm)
+glance(sim1f_lm)
+```
+Across the above iterations of models of the simulated data, the coefficient on `x` doesn't appear to change very much, staying between 1 and 2, but the R-squared values vary quite a bit.
